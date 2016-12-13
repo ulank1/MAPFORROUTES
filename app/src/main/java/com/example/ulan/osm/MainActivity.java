@@ -53,55 +53,62 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Date;
+
 import android.os.Handler;
+
 import java.util.logging.LogRecord;
 
 import static android.R.attr.data;
 
-public class MainActivity extends AppCompatActivity implements MapEventsReceiver{
+public class MainActivity extends AppCompatActivity implements MapEventsReceiver {
     LocationManager locationManager;
     MapView map;
     Routes routes;
     Polyline roadOverlay;
-    int posRoute=0;
+    int posRoute = 0;
     Marker secondMarker;
     ArrayList<Marker> markerList;
-    int posMArker=0;
+    int posMArker = 0;
     TextView textView;
     ArrayList<String> pointList;
     Handler h;
-    int a=0;
+    int a = 0;
     ArrayList<String> s;
-     RoadManager roadManager;
+    RoadManager roadManager;
     ArrayList<GeoPoint> waypoints;
+    Spinner spinner;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Toolbar toolbar;
-        textView=(TextView) findViewById(R.id.text);
-        routes=new Routes();
-        markerList=new ArrayList<>();
-        pointList=new ArrayList<>();
+        textView = (TextView) findViewById(R.id.text);
+        routes = new Routes();
+        markerList = new ArrayList<>();
+        pointList = new ArrayList<>();
         waypoints = new ArrayList<>();
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         MapEventsOverlay mapEventsOverlay = new MapEventsOverlay(this, this);
-        s=new ArrayList<>();
+        s = new ArrayList<>();
         s.add("#");
-        for (int i=100;i<400;i++){
-            s.add(i+"");
+        for (int i = 100; i < 400; i++) {
+            s.add(i + "");
         }
 
 
-         h = new Handler() {
+        h = new Handler() {
             @Override
 
 
             public void handleMessage(android.os.Message msg) {
                 // обновляем TextView
+
                 map.invalidate();
-            };
+            }
+
+            ;
         };
 //deleting the file
         //Spinner------------------------------------------------------------------------------------
@@ -109,7 +116,7 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, s);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
-        Spinner spinner = (Spinner) findViewById(R.id.spiner);
+        spinner = (Spinner) findViewById(R.id.spiner);
         spinner.setAdapter(adapter);
         // заголовок
         spinner.setPrompt("Title");
@@ -126,6 +133,7 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
                 // показываем позиция нажатого элемента
 
             }
+
             @Override
             public void onNothingSelected(AdapterView<?> arg0) {
             }
@@ -147,11 +155,8 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         mapController.setCenter(startPoint);
 
 
-
-
-
-
     }
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -162,50 +167,29 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
 //42.82467/74.53717
 
 
-
     @Override
     public boolean singleTapConfirmedHelper(final GeoPoint geoPoint) {
 
 
-
-
-
-        Thread thread=new Thread(new Runnable() {
+        Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
 
                 secondMarker = new Marker(map);
-                secondMarker.setPosition(new GeoPoint(geoPoint.getLatitude(),geoPoint.getLongitude()));
+                secondMarker.setPosition(new GeoPoint(geoPoint.getLatitude(), geoPoint.getLongitude()));
                 secondMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-                secondMarker.setOnMarkerDragListener(new Marker.OnMarkerDragListener() {
-                    @Override
-                    public void onMarkerDrag(Marker marker) {
 
-                    }
-
-                    @Override
-                    public void onMarkerDragEnd(Marker marker) {
-
-                    }
-
-                    @Override
-                    public void onMarkerDragStart(Marker marker) {
-
-                    }
-                });
                 markerList.add(secondMarker);
-                map.getOverlays().add(markerList.get(markerList.size()-1));
-                pointList.add("waypoints.add(new GeoPoint("+geoPoint.getLatitude()+","+geoPoint.getLongitude()+"));");
+                map.getOverlays().add(markerList.get(markerList.size() - 1));
+                pointList.add("waypoints.add(new GeoPoint(" + geoPoint.getLatitude() + "," + geoPoint.getLongitude() + "));");
                 h.sendEmptyMessage(1);
-
-
 
 
             }
         });
         thread.start();
         waypoints.add(geoPoint);
-        if (a==1) {
+        if (a == 1) {
 
 
             Thread thread1 = new Thread(new Runnable() {
@@ -216,7 +200,7 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
                     Road road = roadManager.getRoad(waypoints);
 
 
-                        map.getOverlays().remove(roadOverlay);
+                    map.getOverlays().remove(roadOverlay);
                     roadOverlay = RoadManager.buildRoadOverlay(road);
 
                     map.getOverlays().add(roadOverlay);
@@ -225,28 +209,28 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
             });
             thread1.start();
         }
-        a=1;
+        a = 1;
         return true;
     }
 
     @Override
     public boolean longPressHelper(GeoPoint geoPoint) {
 
-            Thread thread=new Thread(new Runnable() {
-                @Override
-                public void run() {
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
 
-                        secondMarker=markerList.get(markerList.size()-1);
-                        map.getOverlays().remove(secondMarker);
+                secondMarker = markerList.get(markerList.size() - 1);
+                map.getOverlays().remove(secondMarker);
 
 
-                        h.sendEmptyMessage(1);
+                h.sendEmptyMessage(1);
 
-                }
-            });
-          thread.start();
-        waypoints.remove(waypoints.size()-1);
-        Thread thread1=new Thread(new Runnable() {
+            }
+        });
+        thread.start();
+        waypoints.remove(waypoints.size() - 1);
+        Thread thread1 = new Thread(new Runnable() {
             @Override
             public void run() {
 
@@ -254,7 +238,7 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
                 Road road = roadManager.getRoad(waypoints);
 
 
-                    map.getOverlays().remove(roadOverlay);
+                map.getOverlays().remove(roadOverlay);
                 roadOverlay = RoadManager.buildRoadOverlay(road);
 
                 map.getOverlays().add(roadOverlay);
@@ -262,8 +246,8 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
             }
         });
         thread1.start();
-        pointList.remove(pointList.size()-1);
-        posMArker=1;
+        pointList.remove(pointList.size() - 1);
+        posMArker = 1;
         return false;
     }
 
@@ -272,6 +256,7 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         getMenuInflater().inflate(R.menu.main_menu, menu);
         return true;
     }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         File fileName = null;
@@ -286,24 +271,46 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
             fileName.mkdirs();
 
         File sdDir = android.os.Environment.getExternalStorageDirectory();
-        File fileNam = new File(sdDir, "routes/primer.txt");
-        for (int i=0;i<pointList.size();i++){
-            textView.append(pointList.get(i)+"\n");
+        int i = 0;
+        File fileNam = null;
+        while (i != pointList.size()) {
+
+             textView.append(pointList.get(i) + "\n");
+            if (i % 15 == 0) {
+                fileNam = new File(sdDir, "routes/" + s.get(spinner.getSelectedItemPosition()) + i / 15 + ").txt");
+                try {
+                    FileWriter f = new FileWriter(fileNam);
+                    f.write(textView.getText().toString());
+                    f.flush();
+                    f.close();
+                } catch (Exception e) {
+
+                }
+                textView.setText("");
+            }
+            if (i==pointList.size()-1&& i%15!=0){
+                fileNam = new File(sdDir, "routes/" + s.get(spinner.getSelectedItemPosition()) + ((i / 15)+1) + ").txt");
+
+                try {
+                    FileWriter f = new FileWriter(fileNam);
+                    f.write(textView.getText().toString());
+                    f.flush();
+                    f.close();
+                } catch (Exception e) {
+
+                }
+                textView.setText("");
+            }
+            i++;
         }
-
-        try {
-            FileWriter f = new FileWriter(fileNam);
-            f.write(textView.getText().toString());
-            f.flush();
-            f.close();
-        } catch (Exception e) {
-
-        }
-
         return super.onOptionsItemSelected(item);
 
 
     }
+
+
+
+
 
 
 }
