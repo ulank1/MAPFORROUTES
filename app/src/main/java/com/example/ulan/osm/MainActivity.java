@@ -289,7 +289,7 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
                 textView.setText("");
             }
             if (i==pointList.size()-1&& i%15!=0){
-                fileNam = new File(sdDir, "routes/" + s.get(spinner.getSelectedItemPosition()) + ((i / 15)+1) + ").txt");
+                fileNam = new File(sdDir, "routes/" + s.get(spinner.getSelectedItemPosition())+"(" + ((i / 15)+1) + ").txt");
 
                 try {
                     FileWriter f = new FileWriter(fileNam);
@@ -304,6 +304,7 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
             i++;
         }
         return super.onOptionsItemSelected(item);
+
 
 
     }
