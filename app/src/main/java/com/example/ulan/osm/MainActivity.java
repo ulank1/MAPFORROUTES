@@ -27,6 +27,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.osmdroid.api.IMapController;
+import org.osmdroid.bonuspack.routing.MapQuestRoadManager;
 import org.osmdroid.bonuspack.routing.OSRMRoadManager;
 import org.osmdroid.bonuspack.routing.Road;
 import org.osmdroid.bonuspack.routing.RoadManager;
@@ -76,8 +77,8 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
     ArrayList<String> s;
     RoadManager roadManager;
     ArrayList<GeoPoint> waypoints;
-    Spinner spinner;
-
+    Spinner spinner,spinner2;
+    String sss[]={"1","2"};
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -116,6 +117,13 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, s);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
+        ArrayAdapter<String> adapter2 = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, sss);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+
+        spinner2 = (Spinner) findViewById(R.id.spiner2);
+        spinner2.setAdapter(adapter2);
+
         spinner = (Spinner) findViewById(R.id.spiner);
         spinner.setAdapter(adapter);
         // заголовок
@@ -123,7 +131,9 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         // выделяем элемент
         spinner.setSelection(0);
 
-        roadManager = new OSRMRoadManager(this);
+
+       roadManager = new MapQuestRoadManager("CZakBOlbjVe4KXdNZ3Uy1k71UbRjws2H");
+        roadManager.addRequestOption("routeType=fastest");
         // устанавливаем обработчик нажатия
 
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -276,8 +286,8 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         while (i != pointList.size()) {
 
              textView.append(pointList.get(i) + "\n");
-            if (i % 15 == 0) {
-                fileNam = new File(sdDir, "routes/" + s.get(spinner.getSelectedItemPosition()) + i / 15 + ").txt");
+            if (i % 50 == 0) {
+                fileNam = new File(sdDir, "routes/" +"("+sss[spinner2.getSelectedItemPosition()]+")"+ s.get(spinner.getSelectedItemPosition())+"(" + i / 50 + ").txt");
                 try {
                     FileWriter f = new FileWriter(fileNam);
                     f.write(textView.getText().toString());
@@ -288,8 +298,8 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
                 }
                 textView.setText("");
             }
-            if (i==pointList.size()-1&& i%15!=0){
-                fileNam = new File(sdDir, "routes/" + s.get(spinner.getSelectedItemPosition())+"(" + ((i / 15)+1) + ").txt");
+            if (i==pointList.size()-1&& i%50!=0){
+                fileNam = new File(sdDir, "routes/" +"("+sss[spinner2.getSelectedItemPosition()]+")"+ s.get(spinner.getSelectedItemPosition())+"(" + ((i / 50)+1) + ").txt");
 
                 try {
                     FileWriter f = new FileWriter(fileNam);
