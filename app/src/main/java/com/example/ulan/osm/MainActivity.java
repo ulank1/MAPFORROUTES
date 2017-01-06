@@ -8,6 +8,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.os.Environment;
 import android.os.StrictMode;
 import android.support.v4.app.ActivityCompat;
@@ -22,10 +23,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.osmdroid.api.IMapController;
 import org.osmdroid.bonuspack.routing.MapQuestRoadManager;
 import org.osmdroid.bonuspack.routing.OSRMRoadManager;
@@ -45,13 +49,20 @@ import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 import org.osmdroid.views.overlay.mylocation.SimpleLocationOverlay;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -74,7 +85,10 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
     ArrayList<String> pointList;
     Handler h;
     int a = 0;
+    LinearLayout linearLayout;
+    int counter=0;
     ArrayList<String> s;
+    ArrayList<GeoPoint> pointList1;
     RoadManager roadManager;
     ArrayList<GeoPoint> waypoints;
     Spinner spinner,spinner2;
@@ -84,10 +98,12 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Toolbar toolbar;
+        linearLayout=(LinearLayout) findViewById(R.id.linear);
         textView = (TextView) findViewById(R.id.text);
         routes = new Routes();
         markerList = new ArrayList<>();
         pointList = new ArrayList<>();
+        pointList1 = new ArrayList<>();
         waypoints = new ArrayList<>();
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -192,6 +208,7 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
                 markerList.add(secondMarker);
                 map.getOverlays().add(markerList.get(markerList.size() - 1));
                 pointList.add("waypoints.add(new GeoPoint(" + geoPoint.getLatitude() + "," + geoPoint.getLongitude() + "));");
+                pointList1.add(geoPoint);
                 h.sendEmptyMessage(1);
 
 
@@ -244,14 +261,20 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
             @Override
             public void run() {
 
+                try {
 
-                Road road = roadManager.getRoad(waypoints);
+
+                    Road road = roadManager.getRoad(waypoints);
 
 
-                map.getOverlays().remove(roadOverlay);
-                roadOverlay = RoadManager.buildRoadOverlay(road);
+                    map.getOverlays().remove(roadOverlay);
+                    roadOverlay = RoadManager.buildRoadOverlay(road);
 
-                map.getOverlays().add(roadOverlay);
+                    map.getOverlays().add(roadOverlay);
+                }
+                catch (Exception e){
+
+                }
                 h.sendEmptyMessage(1);
             }
         });
@@ -267,61 +290,151 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         return true;
     }
 
+//    @Override
+//    public boolean onOptionsItemSelected(MenuItem item) {
+//        File fileName = null;
+//        String sdState = android.os.Environment.getExternalStorageState();
+//        if (sdState.equals(android.os.Environment.MEDIA_MOUNTED)) {
+//            File sdDir = android.os.Environment.getExternalStorageDirectory();
+//            fileName = new File(sdDir, "routes");
+//        } else {
+//            fileName = this.getCacheDir();
+//        }
+//        if (!fileName.exists())
+//            fileName.mkdirs();
+//
+//        File sdDir = android.os.Environment.getExternalStorageDirectory();
+//        int i = 0;
+//        File fileNam = null;
+//        while (i != pointList.size()) {
+//
+//             textView.append(pointList.get(i) + "\n");
+//            if (i % 50 == 0) {
+//                fileNam = new File(sdDir, "routes/" +"("+sss[spinner2.getSelectedItemPosition()]+")"+ s.get(spinner.getSelectedItemPosition())+"(" + i / 50 + ").txt");
+//                try {
+//                    FileWriter f = new FileWriter(fileNam);
+//                    f.write(textView.getText().toString());
+//                    f.flush();
+//                    f.close();
+//                } catch (Exception e) {
+//
+//                }
+//                textView.setText("");
+//            }
+//            if (i==pointList.size()-1&& i%50!=0){
+//                fileNam = new File(sdDir, "routes/" +"("+sss[spinner2.getSelectedItemPosition()]+")"+ s.get(spinner.getSelectedItemPosition())+"(" + ((i / 50)+1) + ").txt");
+//
+//                try {
+//                    FileWriter f = new FileWriter(fileNam);
+//                    f.write(textView.getText().toString());
+//                    f.flush();
+//                    f.close();
+//                } catch (Exception e) {
+//
+//                }
+//                textView.setText("");
+//            }
+//            i++;
+//        }
+//        return super.onOptionsItemSelected(item);
+//
+//
+//
+//    }
+
+    public  void sendRoutes(int i){
+        JSONObject obj = new JSONObject();
+        try {
+
+            obj.put("price",s.get(spinner.getSelectedItemPosition()));
+            obj.put("lat",pointList1.get(i).getLatitude());
+            obj.put("longt",pointList1.get(i).getLongitude());
+            Log.e("TAG", "asd");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        new SendJsonDataToServer().execute(String.valueOf(obj));
+    }
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        File fileName = null;
-        String sdState = android.os.Environment.getExternalStorageState();
-        if (sdState.equals(android.os.Environment.MEDIA_MOUNTED)) {
-            File sdDir = android.os.Environment.getExternalStorageDirectory();
-            fileName = new File(sdDir, "routes");
-        } else {
-            fileName = this.getCacheDir();
-        }
-        if (!fileName.exists())
-            fileName.mkdirs();
+        linearLayout.setVisibility(View.VISIBLE);
+        counter=0;
+        sendRoutes(0);
 
-        File sdDir = android.os.Environment.getExternalStorageDirectory();
-        int i = 0;
-        File fileNam = null;
-        while (i != pointList.size()) {
-
-             textView.append(pointList.get(i) + "\n");
-            if (i % 50 == 0) {
-                fileNam = new File(sdDir, "routes/" +"("+sss[spinner2.getSelectedItemPosition()]+")"+ s.get(spinner.getSelectedItemPosition())+"(" + i / 50 + ").txt");
-                try {
-                    FileWriter f = new FileWriter(fileNam);
-                    f.write(textView.getText().toString());
-                    f.flush();
-                    f.close();
-                } catch (Exception e) {
-
-                }
-                textView.setText("");
-            }
-            if (i==pointList.size()-1&& i%50!=0){
-                fileNam = new File(sdDir, "routes/" +"("+sss[spinner2.getSelectedItemPosition()]+")"+ s.get(spinner.getSelectedItemPosition())+"(" + ((i / 50)+1) + ").txt");
-
-                try {
-                    FileWriter f = new FileWriter(fileNam);
-                    f.write(textView.getText().toString());
-                    f.flush();
-                    f.close();
-                } catch (Exception e) {
-
-                }
-                textView.setText("");
-            }
-            i++;
-        }
         return super.onOptionsItemSelected(item);
-
-
 
     }
 
 
+    class SendJsonDataToServer extends AsyncTask<String, String, String> {
+        @Override
+        protected String doInBackground(String... params) {
+            String JsonResponse = null;
+            String JsonDATA = params[0];
+            HttpURLConnection urlConnection = null;
+            BufferedReader reader = null;
+            try {
+                URL url = null;
+                if (spinner2.getSelectedItemPosition()==0)
+                 url = new URL("https://routes-of-bishkek.herokuapp.com/api/v1/route/");
+                if (spinner2.getSelectedItemPosition()==1)
+                    url = new URL("https://routes-of-bishkek.herokuapp.com/api/v1/search/");
+                urlConnection = (HttpURLConnection) url.openConnection();
+
+                urlConnection.setDoOutput(true);
+                urlConnection.setRequestMethod("POST");
+                urlConnection.setRequestProperty("Content-Type", "application/json");
+                urlConnection.setRequestProperty("Accept", "application/json");
+
+                Writer writer = new BufferedWriter(new OutputStreamWriter(urlConnection.getOutputStream(), "UTF-8"));
+                try {
+                    writer.write(JsonDATA);
+                } catch (Exception e) {
+                    Log.e("TAG", "Error");
+                }
+                writer.close();
+
+                InputStream inputStream = urlConnection.getInputStream();
+                StringBuffer buffer = new StringBuffer();
+                if (inputStream == null) {
+                    return null;
+                }
+                Log.e("TAG", "asdfasd");
+                reader = new BufferedReader(new InputStreamReader(inputStream));
+
+                String inputLine;
+                while ((inputLine = reader.readLine()) != null)
+                    buffer.append(inputLine + "\n");
+                if (buffer.length() == 0) {
+                    return null;
+                }
+                JsonResponse = buffer.toString();
+                Log.e("TAG", JsonResponse);
+                return JsonResponse;
 
 
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                if (urlConnection != null) {
+                    urlConnection.disconnect();
+                }
+
+            }
+            return "";
+
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+            counter++;
+            if (pointList.size()!=counter)
+        sendRoutes(counter);
+            else linearLayout.setVisibility(View.GONE);
+        }
+    }
 
 
 }
