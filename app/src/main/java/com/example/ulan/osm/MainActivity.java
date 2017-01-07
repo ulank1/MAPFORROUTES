@@ -91,8 +91,9 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
     ArrayList<GeoPoint> pointList1;
     RoadManager roadManager;
     ArrayList<GeoPoint> waypoints;
-    Spinner spinner,spinner2;
+    Spinner spinner,spinner2,spinner3;
     String sss[]={"1","2"};
+    String ssss[]={"1","2","3","4","5","6","7"};
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -136,6 +137,13 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         ArrayAdapter<String> adapter2 = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, sss);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
+
+        ArrayAdapter<String> adapter3 = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, ssss);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+
+        spinner3 = (Spinner) findViewById(R.id.spiner3);
+        spinner3.setAdapter(adapter3);
 
         spinner2 = (Spinner) findViewById(R.id.spiner2);
         spinner2.setAdapter(adapter2);
@@ -349,9 +357,11 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
             obj.put("price",s.get(spinner.getSelectedItemPosition()));
             obj.put("lat",pointList1.get(i).getLatitude());
             obj.put("longt",pointList1.get(i).getLongitude());
+            obj.put("loc",spinner3.getSelectedItemPosition()+1);
             Log.e("TAG", "asd");
         } catch (JSONException e) {
             e.printStackTrace();
+
         }
 
         new SendJsonDataToServer().execute(String.valueOf(obj));

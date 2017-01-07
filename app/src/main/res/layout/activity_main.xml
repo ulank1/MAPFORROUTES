@@ -45,6 +45,14 @@
 
 
             </Spinner>
+
+            <Spinner
+                android:id="@+id/spiner3"
+                android:layout_width="wrap_content"
+                android:layout_height="?attr/actionBarSize">
+
+
+            </Spinner>
         </LinearLayout>
     </android.support.design.widget.AppBarLayout>
 
